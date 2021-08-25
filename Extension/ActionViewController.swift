@@ -18,6 +18,7 @@ class ActionViewController: UIViewController {
         super.viewDidLoad()
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(done))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(add))
     
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -37,6 +38,25 @@ class ActionViewController: UIViewController {
                     }
                 }
             }
+        }
+    }
+    
+    @objc func add() {
+        let ac = UIAlertController(title: "Scripts", message: "Add a script.", preferredStyle: .actionSheet)
+        let titleAction = UIAlertAction(title: "Title", style: .default, handler: displayAction)
+        let URLAction = UIAlertAction(title: "URL", style: .default, handler: displayAction)
+        ac.addAction(titleAction)
+        ac.addAction(URLAction)
+        present(ac, animated: true)
+    }
+    
+    func displayAction(action: UIAlertAction) {
+        guard let title = action.title else { return }
+        
+        if title == "Title" {
+            script.text = "alert(document.title);"
+        } else if title == "URL" {
+            script.text = "alert(document.URL);"
         }
     }
 
