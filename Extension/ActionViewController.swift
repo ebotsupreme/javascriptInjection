@@ -42,11 +42,10 @@ class ActionViewController: UIViewController {
                     let pageURL = javaScriptValues["URL"] as? String ?? ""
                     
                     if self?.pages.isEmpty == true {
-                        let page = Page(pageTitle: pageTitle, pageURL: pageURL, scriptText: "")
+                        let page = Page(pageTitle: pageTitle, pageURL:  pageURL, scriptText: "")
                         self?.pages.append(page)
                     } else {
                         self?.pages.forEach { page in
-                            print("page loop: \(page)")
                             if page.pageURL == pageURL {
                                 DispatchQueue.main.async {
                                     // exists, load script text
@@ -77,7 +76,6 @@ class ActionViewController: UIViewController {
     }
     
     func load() {
-        print("BEGIN LOAD!!!")
         let defaults = UserDefaults.standard
         if let savedPages = defaults.object(forKey: "pages") as? Data {
             let jsonDecoder = JSONDecoder()
