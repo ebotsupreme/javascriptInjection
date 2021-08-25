@@ -11,6 +11,8 @@ import MobileCoreServices
 class ActionViewController: UIViewController {
     @IBOutlet var script: UITextView!
     
+    var pages = [Page]()
+    
     var pageTitle = ""
     var pageURL = ""
 
@@ -23,6 +25,9 @@ class ActionViewController: UIViewController {
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillHideNotification, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+//        UserDefaults.standard.removeObject(forKey: "pages")
+//        print(UserDefaults.standard.bool(forKey: "pages"))
+        load()
         
         if let inputItem = extensionContext?.inputItems.first as? NSExtensionItem {
             if let itemProvider = inputItem.attachments?.first {
@@ -33,11 +38,65 @@ class ActionViewController: UIViewController {
                     self?.pageTitle = javaScriptValues["title"] as? String ?? ""
                     self?.pageURL = javaScriptValues["URL"] as? String ?? ""
                     
-                    DispatchQueue.main.async {
-                        self?.title = self?.pageTitle
+                    let pageTitle = javaScriptValues["title"] as? String ?? ""
+                    let pageURL = javaScriptValues["URL"] as? String ?? ""
+                    
+                    if self?.pages.isEmpty == true {
+                        let page = Page(pageTitle: pageTitle, pageURL: pageURL, scriptText: "")
+                        self?.pages.append(page)
+                    } else {
+                        self?.pages.forEach { page in
+                            print("page loop: \(page)")
+                            if page.pageURL == pageURL {
+                                DispatchQueue.main.async {
+                                    // exists, load script text
+                                    self?.script.text = page.scriptText
+                                }
+                                
+                            } else {
+                                let page = Page(pageTitle: pageTitle, pageURL: pageURL, scriptText: "")
+                                self?.pages.append(page)
+                            }
+                        }
                     }
+                    DispatchQueue.main.async {
+                        self?.title = pageTitle
+                    }
+                    print(self?.pages)
+                    
+//                    self?.pageTitle = javaScriptValues["title"] as? String ?? ""
+//                    self?.pageURL = javaScriptValues["URL"] as? String ?? ""
+//
+//                    DispatchQueue.main.async {
+//                        self?.title = self?.pageTitle
+//                    }
                 }
             }
+        }
+        
+    }
+    
+    func load() {
+        print("BEGIN LOAD!!!")
+        let defaults = UserDefaults.standard
+        if let savedPages = defaults.object(forKey: "pages") as? Data {
+            let jsonDecoder = JSONDecoder()
+            
+            do {
+                pages = try jsonDecoder.decode([Page].self, from: savedPages)
+                print("PAGES::: \(pages)")
+            } catch {
+                print("Failed to load pages.")
+            }
+        }
+    }
+    
+    func save() {
+        let jsonEncoder = JSONEncoder()
+
+        if let savedData = try? jsonEncoder.encode(pages) {
+            let defaults = UserDefaults.standard
+            defaults.set(savedData, forKey: "pages")
         }
     }
     
@@ -62,11 +121,19 @@ class ActionViewController: UIViewController {
 
     @IBAction func done() {
         let item = NSExtensionItem()
-        let argument: NSDictionary = ["customJavaScript": script.text]
+        let argument: NSDictionary = ["customJavaScript": script.text ?? ""]
         let webDictionary: NSDictionary = [NSExtensionJavaScriptFinalizeArgumentKey: argument]
         let customJavaScript = NSItemProvider(item: webDictionary, typeIdentifier: kUTTypePropertyList as String)
         item.attachments = [customJavaScript]
         extensionContext?.completeRequest(returningItems: [item])
+        
+        pages.forEach { page in
+            if page.pageURL == pageURL {
+                print("MATCH")
+                page.scriptText = script.text
+            }
+        }
+        save()
     }
     
     @objc func adjustForKeyboard(notification: Notification) {
