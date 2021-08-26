@@ -25,8 +25,10 @@ class ActionViewController: UIViewController {
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillHideNotification, object: nil)
         notificationCenter.addObserver(self, selector: #selector(adjustForKeyboard), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        
 //        UserDefaults.standard.removeObject(forKey: "pages")
 //        print(UserDefaults.standard.bool(forKey: "pages"))
+        
         load()
         
         if let inputItem = extensionContext?.inputItems.first as? NSExtensionItem {
@@ -42,7 +44,7 @@ class ActionViewController: UIViewController {
                     let pageURL = javaScriptValues["URL"] as? String ?? ""
                     
                     if self?.pages.isEmpty == true {
-                        let page = Page(pageTitle: pageTitle, pageURL:  pageURL, scriptText: "")
+                        let page = Page(pageTitle: pageTitle, pageURL:  pageURL, scriptText: "", scriptTitle: "")
                         self?.pages.append(page)
                     } else {
                         self?.pages.forEach { page in
@@ -53,7 +55,7 @@ class ActionViewController: UIViewController {
                                 }
                                 
                             } else {
-                                let page = Page(pageTitle: pageTitle, pageURL: pageURL, scriptText: "")
+                                let page = Page(pageTitle: pageTitle, pageURL: pageURL, scriptText: "", scriptTitle: "")
                                 self?.pages.append(page)
                             }
                         }
@@ -125,12 +127,27 @@ class ActionViewController: UIViewController {
         item.attachments = [customJavaScript]
         extensionContext?.completeRequest(returningItems: [item])
         
+//        print("BEGIN AC ADD SCRIPT NAME")
+//        let ac = UIAlertController(title: "Add script name", message: nil, preferredStyle: .alert)
+//        ac.addTextField()
+//        let submitAction = UIAlertAction(title: "Submit", style: .default) { [weak self, weak ac] _ in
+//            let answer = ac?.textFields?[0].text
+//            print("ASNWER: \(answer)")
+//            if let submitAnswer = answer {
+//                self?.submit(answer: submitAnswer)
+//            }
+//
+//        }
+//        ac.addAction(submitAction)
+//        present(ac, animated: true)
+        
         pages.forEach { page in
             if page.pageURL == pageURL {
                 print("MATCH")
                 page.scriptText = script.text
             }
         }
+        
         save()
     }
     
@@ -151,5 +168,16 @@ class ActionViewController: UIViewController {
         let selectedRange = script.selectedRange
         script.scrollRangeToVisible(selectedRange)
     }
+    
+//    func submit(answer: String) {
+//        print("SUBMIT FUNC ")
+//        pages.forEach { page in
+//            if page.pageURL == pageURL {
+//                print("MATCH")
+//                page.scriptText = script.text
+//                page.scriptTitle = answer
+//            }
+//        }
+//    }
 
 }

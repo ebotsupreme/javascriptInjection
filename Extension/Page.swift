@@ -10,12 +10,13 @@ import Foundation
 class Page: Codable {
     let pageTitle: String
     let pageURL: String
-//    let scriptTitle: String
     var scriptText: String
+    var scriptTitle: String
     
-    init(pageTitle: String, pageURL: String, scriptText: String) {
+    init(pageTitle: String, pageURL: String, scriptText: String, scriptTitle: String) {
         self.pageTitle = pageTitle
         self.pageURL = pageURL
         self.scriptText = scriptText
+        self.scriptTitle = scriptTitle
     }
 }
